@@ -3,6 +3,14 @@ using Xunit;
 
 namespace Bcr.CodeKata.DependencyInjectionContainer.Test
 {
+    interface IFoo
+    {
+    }
+
+    class Foo : IFoo
+    {
+    }
+
     public class MyContainerTest
     {
         [Fact]
@@ -10,6 +18,31 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
         {
             var container = new MyContainer();
             Assert.NotNull(container);
+        }
+
+        [Fact]
+        public void resolve_returns_instance_of_registered_type()
+        {
+            var container = new MyContainer();
+
+            container.Register<IFoo, Foo>();
+
+            IFoo result = container.Resolve<IFoo>();
+
+            Assert.IsAssignableFrom<IFoo>(result);
+        }
+
+        [Fact]
+        public void multiple_resolve_returns_differnt_instance_of_registered_type()
+        {
+            var container = new MyContainer();
+
+            container.Register<IFoo, Foo>();
+
+            IFoo result = container.Resolve<IFoo>();
+            IFoo result2 = container.Resolve<IFoo>();
+
+            Assert.NotSame(result, result2);
         }
     }
 }
