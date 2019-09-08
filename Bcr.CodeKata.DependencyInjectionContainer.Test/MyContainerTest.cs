@@ -9,6 +9,13 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
 
     class Foo : IFoo
     {
+        public Foo()
+        {
+        }
+
+        public Foo(string param) => MyString = param;
+
+        public string MyString { get; private set; }
     }
 
     public class MyContainerTest
@@ -58,6 +65,21 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
 
             Assert.Same(singleton, result);
             Assert.Same(result, result2);
+        }
+
+        [Fact]
+        public void resolve_with_constructor_injection()
+        {
+            var container = new MyContainer();
+
+            container.Register<IFoo, Foo, string>();
+            container.Register<string>("My single string");
+
+            IFoo result = container.Resolve<IFoo>();
+            IFoo result2 = container.Resolve<IFoo>();
+
+            Assert.NotSame(result, result2);
+            Assert.Equal("My single string", ((Foo) result).MyString);
         }
     }
 }
