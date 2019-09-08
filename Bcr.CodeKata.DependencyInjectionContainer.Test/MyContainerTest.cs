@@ -81,5 +81,37 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
             Assert.NotSame(result, result2);
             Assert.Equal("My single string", ((Foo) result).MyString);
         }
+
+        [Fact]
+        public void resolve_with_constructor_injection_changing_registration_order()
+        {
+            MyContainer container;
+
+            {
+                container = new MyContainer();
+
+                container.Register<string>("My single string");
+                container.Register<IFoo, Foo, string>();
+
+                IFoo result = container.Resolve<IFoo>();
+                IFoo result2 = container.Resolve<IFoo>();
+
+                Assert.NotSame(result, result2);
+                Assert.Equal("My single string", ((Foo) result).MyString);
+            }
+
+            {
+                container = new MyContainer();
+
+                container.Register<IFoo, Foo, string>();
+                container.Register<string>("My single string");
+
+                IFoo result = container.Resolve<IFoo>();
+                IFoo result2 = container.Resolve<IFoo>();
+
+                Assert.NotSame(result, result2);
+                Assert.Equal("My single string", ((Foo) result).MyString);
+            }
+        }
     }
 }
