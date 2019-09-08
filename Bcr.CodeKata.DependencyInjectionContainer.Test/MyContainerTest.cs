@@ -44,5 +44,20 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
 
             Assert.NotSame(result, result2);
         }
+
+        [Fact]
+        public void resolve_returns_singleton()
+        {
+            var container = new MyContainer();
+            var singleton = new Foo();
+
+            container.Register<IFoo>(singleton);
+
+            IFoo result = container.Resolve<IFoo>();
+            IFoo result2 = container.Resolve<IFoo>();
+
+            Assert.Same(singleton, result);
+            Assert.Same(result, result2);
+        }
     }
 }
