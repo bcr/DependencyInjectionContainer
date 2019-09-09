@@ -14,8 +14,16 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
         }
 
         public Foo(string param) => MyString = param;
+        public Foo(string param, double param2, int param3)
+        {
+            MyString = param;
+            MyDouble = param2;
+            MyInt = param3;
+        }
 
-        public string MyString { get; private set; }
+        public string MyString { get; private set; } = "";
+        public double MyDouble { get; private set; } = 0.0;
+        public int MyInt { get; private set; } = 0;
     }
 
     public class MyContainerTest
@@ -112,6 +120,46 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
                 Assert.NotSame(result, result2);
                 Assert.Equal("My single string", ((Foo) result).MyString);
             }
+        }
+
+        [Fact]
+        public void resolve_with_greedy_constructor_match()
+        {
+            var container = new MyContainer();
+
+            // Register a greedy constructor type
+            container.Register<IFoo, Foo>(true);
+
+            // With zero registered parameters, this should be the empty
+            // constructor
+            Foo result = (Foo) container.Resolve<IFoo>();
+
+            Assert.NotEqual("My single string", result.MyString);
+            Assert.NotEqual(42.0,               result.MyDouble);
+            Assert.NotEqual(1234,               result.MyInt);
+
+            // Register 2/3 of the things required for the big constructor
+            container.Register<string>("My single string");
+            container.Register<double>(42.0);
+
+            result = (Foo) container.Resolve<IFoo>();
+
+            // It should have picked just the string constructor because there
+            // was a double, but no int, so the big constructor wasn't
+            // satisfied
+            Assert.Equal("My single string",    result.MyString);
+            Assert.NotEqual(42.0,               result.MyDouble);
+            Assert.NotEqual(1234,               result.MyInt);
+
+            // Now register an int, this should have all the params necessary
+            // for the big constructor
+            container.Register<int>(1234);
+
+            result = (Foo) container.Resolve<IFoo>();
+
+            Assert.Equal("My single string",    result.MyString);
+            Assert.Equal(42.0,                  result.MyDouble);
+            Assert.Equal(1234,                  result.MyInt);
         }
     }
 }

@@ -24,6 +24,27 @@ namespace Bcr.CodeKata.DependencyInjectionContainer
                             );
         }
 
+        class GreedyConstructorTypeEntry : ITypeEntry
+        {
+            public Type ObjectType { get; set; }
+            public object Resolve(MyContainer resolver)
+            {
+                // Find all the constructors, order them by the number of
+                // parameters they take in descending order (longest first)
+                // and then find the first one that has all of its types
+                // registered
+                // ObjectType.GetConstructors()[0].GetParameters()[0].ParameterType;
+                var winner = ObjectType.GetConstructors()
+                    .OrderByDescending(x => x.GetParameters().Length)   // Constructors
+                    .First(x => x.GetParameters()
+                        .All(param => resolver.IsRegistered(param.ParameterType)));
+                return winner.Invoke(winner.GetParameters().Select(x => x.ParameterType).Select(
+                            type => resolver.Resolve(type)
+                            ).ToArray()
+                            );
+            }
+        }
+
         class SingletonTypeEntry : ITypeEntry
         {
             public object Singleton { get; set; }
@@ -35,9 +56,20 @@ namespace Bcr.CodeKata.DependencyInjectionContainer
 
         private Dictionary<Type, ITypeEntry> typeDictionary = new Dictionary<Type, ITypeEntry>();
 
-        public void Register<T1, T2>()
+        public void Register<T1, T2>(bool useGreedyConstructorMatching = false)
         {
-            typeDictionary[typeof(T1)] = new ConstructorTypeEntry() { ObjectType = typeof(T2) };
+            ITypeEntry finalEntry = null;
+
+            if (useGreedyConstructorMatching)
+            {
+                finalEntry = new GreedyConstructorTypeEntry() { ObjectType = typeof(T2) };
+            }
+            else
+            {
+                finalEntry = new ConstructorTypeEntry() { ObjectType = typeof(T2) };
+            }
+
+            typeDictionary[typeof(T1)] = finalEntry;
         }
 
         public object Resolve(Type T)
@@ -61,6 +93,11 @@ namespace Bcr.CodeKata.DependencyInjectionContainer
             entry.ObjectType = typeof(T2);
             entry.ConstructorParamterTypes.Add(typeof(T3));
             typeDictionary[typeof(T1)] = entry;
+        }
+
+        private bool IsRegistered(Type t)
+        {
+            return typeDictionary.ContainsKey(t);
         }
     }
 }
