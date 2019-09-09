@@ -80,7 +80,7 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
         {
             var container = new MyContainer();
 
-            container.Register<IFoo, Foo, string>();
+            container.Register<IFoo, Foo>();
             container.Register<string>("My single string");
 
             IFoo result = container.Resolve<IFoo>();
@@ -99,7 +99,7 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
                 container = new MyContainer();
 
                 container.Register<string>("My single string");
-                container.Register<IFoo, Foo, string>();
+                container.Register<IFoo, Foo>();
 
                 IFoo result = container.Resolve<IFoo>();
                 IFoo result2 = container.Resolve<IFoo>();
@@ -111,7 +111,7 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
             {
                 container = new MyContainer();
 
-                container.Register<IFoo, Foo, string>();
+                container.Register<IFoo, Foo>();
                 container.Register<string>("My single string");
 
                 IFoo result = container.Resolve<IFoo>();
@@ -128,7 +128,7 @@ namespace Bcr.CodeKata.DependencyInjectionContainer.Test
             var container = new MyContainer();
 
             // Register a greedy constructor type
-            container.Register<IFoo, Foo>(true);
+            container.Register<IFoo, Foo>();
 
             // With zero registered parameters, this should be the empty
             // constructor
